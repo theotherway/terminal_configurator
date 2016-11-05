@@ -198,9 +198,9 @@ function install_powerline()
 
 	cp -v ~/assets/powerline-shell/config.py.dist ~/assets/powerline-shell/config.py
 
-	# chmod -v 755 install.py
+	# chmod -v 755 ~/assets/powerline-shell/install.py
 	# ./install.py
-	python ~/assets/powerline-shell/install.py
+	( cd ~/assets/powerline-shell && ./install.py )
 
 	ln -s -v ~/assets/powerline-shell/powerline-shell.py ~/powerline-shell.py
 }
@@ -262,16 +262,17 @@ function install_atool()
 	(cd ~/2install/atool-0.39.0 && ./configure)
 
 	echo -e "${BLUE}Make${NORMAL}"
-	make ~/2install/atool-0.39.0
+	make -C ~/2install/atool-0.39.0
 
 	echo -e "${BLUE}Make install${NORMAL}"
-	sudo make install ~/2install/atool-0.39.0
+	sudo make install -C ~/2install/atool-0.39.0
 }
 
 function set_zsh_default_shell()
 {
 	print_title "Set ZSH as default shell"
 	echo -e "${BLUE}After setting shell you'll be logged off${NORMAL}"
+
 	chsh -s /bin/zsh
 	env zsh &
 
