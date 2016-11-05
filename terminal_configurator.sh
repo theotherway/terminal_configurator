@@ -274,7 +274,7 @@ function set_zsh_default_shell()
 
 	chsh -s /bin/zsh
 	sleep 1
-	env zsh
+	env zsh &
 	sleep 1
 	pkill -KILL -u $(whoami)
 }
