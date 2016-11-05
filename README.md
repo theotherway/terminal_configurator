@@ -8,7 +8,7 @@ htop, git, nano, zsh, wget, atool, powerline, Epel release (RH/CentOS only)
 Oh-my-ZSH, Addtional highlighting for Nano
 
 ## Usage
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/theotherway/terminal_configurator/master/terminal_configurator.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/theotherway/terminal_configurator/master/terminal_configurator.sh)"
 
 ## Tested on
 CentOS 7

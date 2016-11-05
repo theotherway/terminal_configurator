@@ -7,7 +7,7 @@ BLUE="\e[34m"
 DEBUG=false
 PKG_MANAGER=$( command -v yum || command -v apt || command -v apt-get ) || echo -e "${BOLD}Neither yum nor apt/apt-get found. Aborting${NORMAL}" | exit 1;
 
-if [ $1 -ge "debug" ]; then
+if [ "$1" == "debug" ]; then
 	$DEBUG = true
 fi
 
