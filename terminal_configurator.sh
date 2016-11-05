@@ -7,7 +7,7 @@ BLUE="\e[34m"
 DEBUG=false
 PKG_MANAGER=$( command -v yum || command -v apt || command -v apt-get ) || echo -e "${BOLD}Neither yum nor apt/apt-get found. Aborting${NORMAL}" | exit 1;
 
-if [ "$(whoami)" == 'debug' ]; then
+if [ $1 == 'debug' ]; then
 	$DEBUG = true
 fi
 
@@ -21,8 +21,8 @@ function main_header_and_confirmation()
 {
 	echo -e "${BOLD}-----------------------------------------------------------------${NORMAL}"
 	echo -e "${BOLD}Theotherway automatic terminal configurator${NORMAL}"
-	echo -e "${BOLD}Version: 0.1${NORMAL}"
-	echo -e "${BOLD}Date: 2016-11-04${NORMAL}"
+	echo -e "${BOLD}Version: 0.2${NORMAL}"
+	echo -e "${BOLD}Date: 2016-11-05${NORMAL}"
 	echo -e "${BOLD}-----------------------------------------------------------------${NORMAL}"
 
 	cd ~
@@ -176,7 +176,7 @@ function configure_oh_my_zsh()
 
 	cd ~
 	rm -v .zshrc
-	wget http://172.16.2.4/zshrc_config.txt -O .zshrc
+	wget https://raw.githubusercontent.com/theotherway/terminal_configurator/master/zshrc_config.txt -O .zshrc
 }
 
 function install_powerline()
@@ -350,6 +350,3 @@ function be_picky()
 
 
 main
-
-
-# sh -c "$(curl -fsSL http://172.16.2.4/tow_terminal_config.sh)"

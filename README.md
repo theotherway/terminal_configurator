@@ -1,9 +1,20 @@
 # terminal_configurator
 Configures Linux server / terminal according my wishes
 
+## Installs
+htop, git, nano, zsh, wget, atool, powerline
+
+## Configures
+Oh-my-ZSH, Addtional highlighting for Nano, Epel release (RH/CentOS),
+
+## Usage
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/theotherway/terminal_configurator/master/terminal_configurator.sh)"
+
+## Tested on
+CentOS 7
 
 
-Development machines uses iTerm2 (OSX)
+## Development machines uses iTerm2 (OSX)
 * Theme based on Solarized Dark (http://ethanschoonover.com/solarized)
 * install font Meslo LG M Regular for Powerline.otf (from assets folder)
 	* https://github.com/powerline/fonts
