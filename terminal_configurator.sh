@@ -195,7 +195,6 @@ function install_powerline()
 
 	git clone https://github.com/milkbikis/powerline-shell ~/assets/powerline-shell
 
-
 	cp -v ~/assets/powerline-shell/config.py.dist ~/assets/powerline-shell/config.py
 
 	# chmod -v 755 ~/assets/powerline-shell/install.py
@@ -274,8 +273,9 @@ function set_zsh_default_shell()
 	echo -e "${BLUE}After setting shell you'll be logged off${NORMAL}"
 
 	chsh -s /bin/zsh
-	env zsh &
-
+	sleep 1
+	env zsh
+	sleep 1
 	pkill -KILL -u $(whoami)
 }
 
