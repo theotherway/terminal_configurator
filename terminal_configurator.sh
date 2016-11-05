@@ -25,32 +25,28 @@ function main_header_and_confirmation()
 	echo -e "${BOLD}Date: 2016-11-05${NORMAL}"
 	echo -e "${BOLD}-----------------------------------------------------------------${NORMAL}"
 
-	cd ~
-
 	echo -e "\n${BLUE}Configuring sytem for user ${NORMAL}$(whoami) ${BLUE}with home folder ${NORMAL}$(pwd)"
 
 	read -p "Continue (y/n)? " choice
 	case "$choice" in
 		y|Y )
-		;;
+			;;
 	  	* )
-			exit
-		;;
+			exit;;
 	esac
 }
 
 function run_as_root_warning()
 {
 	if [ "$(whoami)" == 'root' ]; then
-	    echo -e "\n${BOLD}You are running $0 as root user.${NORMAL}"
+	    echo -e "\n${BOLD}You are running ${NORMAL}$0 ${BOLD}as root user.${NORMAL}"
 
 	    read -p "Are you sure (y/n)? " choice
 		case "$choice" in
   			y|Y )
-			;;
+				;;
   			* )
-				exit
-			;;
+				exit;;
 		esac
 	fi
 }
@@ -101,13 +97,11 @@ function remove_old_configs()
 	read -p "Do you want to remove configs (y/n)? " choice
 	case "$choice" in
 	 	y|Y )
-			cd ~
-			rm .zsh*
-			rm powerline-shell.py
-			rm -rf 2install assets .oh-my-zsh/
-		;;
+			rm ~/.zsh*
+			rm ~/powerline-shell.py
+			rm -rf ~/2install ~/assets ~/.oh-my-zsh/;;
 	  	* )
-		;;
+	  		;;
 	esac
 }
 
@@ -135,10 +129,9 @@ function configure_lan_software() #not working yet
 	read -p "Install Avahi and Netatalk (y/n)? " choice
 	case "$choice" in
 		y|Y )
-			sudo $PKG_MANAGER install -y avahidaemon netatalk
-		;;
+			sudo $PKG_MANAGER install -y avahidaemon netatalk;;
 	  	* )
-		;;
+			;;
 	esac
 }
 
@@ -152,12 +145,17 @@ function install_tools()
 	    echo -e "${BLUE}Installing dependencies and tools${NORMAL}"
 	fi
 
-	sudo $PKG_MANAGER install -y htop git nano zsh wget
+	sudo $PKG_MANAGER install -y htop git nano zsh wget make
 }
 
 function install_oh_my_zsh()
 {
 	print_title "Installing Oh-my-ZSH"
+
+	if [ -d ~/.oh-my-zsh ]; then
+		echo -e "${BLUE}~/.oh-my-zsh already exists${NORMAL}"
+  		rm -rfv ~/.oh-my-zsh
+	fi
 
 	git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 
@@ -174,8 +172,11 @@ function configure_oh_my_zsh()
 {
 	print_title "Setting up custom Oh-my-ZSH configuration"
 
-	cd ~
-	rm -v .zshrc
+	if [ -f ~/.zshrc ];then
+		echo -e "${BLUE}~/.zshrc already exists${NORMAL}"
+		mv -v ~/.zshrc ~/.zshrc_backup
+	fi
+
 	wget https://raw.githubusercontent.com/theotherway/terminal_configurator/master/zshrc_config.txt -O .zshrc
 }
 
@@ -183,18 +184,23 @@ function install_powerline()
 {
 	print_title "Installing Powerline shell"
 
-	mkdir -v -p ~/assets/
-	cd ~/assets/
+	if [ ! -d ~/assets/ ]; then
+		mkdir -v -p ~/assets/
+	fi
 
-	git clone https://github.com/milkbikis/powerline-shell
+	if [ -d ~/assets/powerline-shell ]; then
+		echo -e "${BLUE}~/assets/powerline-shell already exists${NORMAL}"
+		rm -rfv ~/assets/powerline-shell
+	fi
 
-	cd powerline-shell
-	echo -e "${BLUE}Installation path $(pwd)${NORMAL}"
+	git clone https://github.com/milkbikis/powerline-shell ~/assets/powerline-shell
 
-	cp -v config.py.dist config.py
 
-	chmod -v 755 install.py
-	./install.py
+	cp -v ~/assets/powerline-shell/config.py.dist ~/assets/powerline-shell/config.py
+
+	# chmod -v 755 install.py
+	# ./install.py
+	python ~/assets/powerline-shell/install.py
 
 	ln -s -v ~/assets/powerline-shell/powerline-shell.py ~/powerline-shell.py
 }
@@ -203,18 +209,25 @@ function install_nano_highlighting()
 {
 	print_title "Installing additional hilighting for Nano"
 
-	mkdir -v ~/2install/
-	cd ~/2install/
-	git clone https://github.com/YSakhno/nanorc.git
+	if [ ! -d ~/2install/ ]; then
+		mkdir -v -p ~/2install/
+	fi
 
-	cd nanorc
+	if [ -d ~/2install/nanorc ]; then
+		echo -e "${BLUE}~/2install/nanorc already exists${NORMAL}"
+		rm -rfv ~/2install/nanorc
+	fi
+
+	git clone https://github.com/YSakhno/nanorc.git ~/2install/nanorc
+
 	echo -e "${BLUE}Download path $(pwd)${NORMAL}"
 
 	echo -e "${BLUE}Make${NORMAL}"
-	make
+	make -C  ~/2install/nanorc
 
 	echo -e "${BLUE}Make install${NORMAL}"
-	make install
+	make install -C ~/2install/nanorc
+
 
 	echo -e "${BLUE}Appending 'include ~/.nano/syntax/ALL.nanorc' to '~/.nanorc'${NORMAL}"
 	echo -e include ~/.nano/syntax/ALL.nanorc >> ~/.nanorc
@@ -226,30 +239,43 @@ function install_atool()
 
 	# http://www.nongnu.org/atool/
 
-	mkdir -v ~/2install/
-	cd ~/2install
-	wget http://savannah.nongnu.org/download/atool/atool-0.39.0.tar.gz
-	tar -zxvf atool-0.39.0.tar.gz
-	rm -v atool-0.39.0.tar.gz
-	cd atool-0.39.0
+	if [ ! -d ~/2install/ ]; then
+		mkdir -v -p ~/2install/
+	fi
+
+	if [ -d ~/2install/atool-0.39.0.tar.gz ]; then
+		echo -e "${BLUE}~/2install/atool-0.39.0.tar.gz already exists${NORMAL}"
+		rm -v ~/2install/atool-0.39.0.tar.gz
+	fi
+
+	if [ -d ~/2install/atool-0.39.0 ]; then
+		echo -e "${BLUE}~/2install/atool-0.39.0 already exists${NORMAL}"
+		rm -rfv ~/2install/atool-0.39.0
+	fi
+
+	wget http://savannah.nongnu.org/download/atool/atool-0.39.0.tar.gz -O ~/2install/atool-0.39.0.tar.gz
+	mkdir -v ~/2install/atool-0.39.0
+	tar -zxvf ~/2install/atool-0.39.0.tar.gz -C ~/2install/atool-0.39.0 --strip-components=1
+	rm -v ~/2install/atool-0.39.0.tar.gz
 
 	echo -e "${BLUE}Configure${NORMAL}"
-	./configure
+	(cd ~/2install/atool-0.39.0 && ./configure)
 
 	echo -e "${BLUE}Make${NORMAL}"
-	make
+	make ~/2install/atool-0.39.0
 
 	echo -e "${BLUE}Make install${NORMAL}"
-	sudo make install
+	sudo make install ~/2install/atool-0.39.0
 }
 
 function set_zsh_default_shell()
 {
 	print_title "Set ZSH as default shell"
-
+	echo -e "${BLUE}After setting shell you'll be logged off${NORMAL}"
 	chsh -s /bin/zsh
-	env zsh
-	cd ~
+	env zsh &
+
+	pkill -KILL -u $(whoami)
 }
 
 
@@ -263,7 +289,7 @@ function main()
 	echo -e "1) Full configure"
 	echo -e "2) Full configure without updating system first"
 	echo -e "3) Be picky"
-
+	echo -e "\n*) Quit"
 
 	read -p ">> " choice
 	case "$choice" in
@@ -313,6 +339,7 @@ function be_picky()
 	echo -e "6) Install additional Nano hilighting"
 	echo -e "7) Install atool"
 	echo -e "8) Set ZSH as default shell"
+	echo -e "\n*) Quit"
 
 	read -p ">> " choice
 	case "$choice" in
@@ -343,8 +370,7 @@ function be_picky()
 		8 )
 			set_zsh_default_shell;;
 	  	* )
-			exit
-		;;
+			exit;;
 	esac
 }
 
