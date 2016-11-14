@@ -11,7 +11,7 @@ Oh-my-ZSH, Addtional highlighting for Nano
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/theotherway/terminal_configurator/master/terminal_configurator.sh)"
 
 ## Tested on
-CentOS 7
+CentOS 7, Debian 8, Raspian Jessie lite
 
 
 ## Todo's and wishes
