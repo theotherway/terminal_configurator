@@ -6,6 +6,8 @@ BLUE="\e[34m"
 
 DEBUG=false
 PKG_MANAGER=$( command -v yum || command -v apt || command -v apt-get ) || echo -e "${BOLD}Neither yum nor apt/apt-get found. Aborting${NORMAL}" | exit 1;
+PATH_2INSTALL=~/2install
+PATH_ASSETS=~/assets
 
 if [ "$1" == "debug" ]; then
 	$DEBUG = true
@@ -92,19 +94,45 @@ function sudo_ping()
 
 function remove_old_configs()
 {
-	print_title "Removing old configurations (DEBUG ONLY - can result in unwanted deletion of files)"${NORMAL}""
+	print_title "Removing old configurations (DEBUG ONLY - can result in unwanted deletion of files)"
 
 	read -p "Do you want to remove configs (y/n)? " choice
 	case "$choice" in
 	 	y|Y )
 			rm ~/.zsh*
 			rm ~/powerline-shell.py
-			rm -rf ~/2install ~/assets ~/.oh-my-zsh/;;
+			rm -rf $PATH_2INSTALL $PATH_ASSETS ~/.oh-my-zsh;;
 	  	* )
 	  		;;
 	esac
 }
 
+function change_hostname()
+{
+	print_title "Change hostname"
+	echo -e "${BLUE}The current hostname is ${NORMAL}$(hostname)"
+	read -p "Do you want to change it (y/n)? " choice
+	case "$choice" in
+	 	y|Y )
+			set_new_hostname;;
+	  	* )
+	  		;;
+	esac
+}
+
+function set_new_hostname()
+{
+	read -p "Enter new hostname >> " newhostname
+
+	echo -e "${BLUE}Hostname will be changed to ${NORMAL}${newhostname}"
+	read -p "Is this okay (y/n)? " hostnameokay
+	case "$hostnameokay" in
+		y|Y )
+			sudo hostname $newhostname;;
+		* )
+			set_new_hostname;;
+	esac
+}
 
 function update_system()
 {
@@ -142,7 +170,7 @@ function install_tools()
 	if [[ $PKG_MANAGER == *yum* ]]; then
 	    echo -e "${BLUE}Red Hat derived distrubtion found, installing Epel release for dependencies${NORMAL}"
 	    sudo $PKG_MANAGER install -y epel-release
-	    echo -e "${BLUE}Installing dependencies and tools${NORMAL}"
+	    echo -e "$\n{BLUE}Installing dependencies and tools${NORMAL}"
 	fi
 
 	sudo $PKG_MANAGER install -y htop git nano zsh wget make
@@ -158,14 +186,6 @@ function install_oh_my_zsh()
 	fi
 
 	git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
-
-	# mkdir -v -p ~/2install/ohmyzsh/
-	# cd ~/2install/ohmyzsh/
-	# echo -e "Oh-my-ZSH Installation script path $(pwd)"
-	# wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh
-	# chmod -v 755 install.sh
-	# ./install.sh
-	# wait
 }
 
 function configure_oh_my_zsh()
@@ -184,52 +204,55 @@ function install_powerline()
 {
 	print_title "Installing Powerline shell"
 
-	if [ ! -d ~/assets/ ]; then
-		mkdir -v -p ~/assets/
+	if [ ! -d $PATH_ASSETS ]; then
+		mkdir -v -p $PATH_ASSETS
 	fi
 
-	if [ -d ~/assets/powerline-shell ]; then
-		echo -e "${BLUE}~/assets/powerline-shell already exists${NORMAL}"
-		rm -rfv ~/assets/powerline-shell
+	if [ -d $PATH_ASSETS/powerline-shell ]; then
+		echo -e "${BLUE}$PATH_ASSETS/powerline-shell already exists${NORMAL}"
+		rm -rfv $PATH_ASSETS/powerline-shell
 	fi
 
 	git clone https://github.com/milkbikis/powerline-shell ~/assets/powerline-shell
 
-	cp -v ~/assets/powerline-shell/config.py.dist ~/assets/powerline-shell/config.py
+	cp -v $PATH_ASSETS/powerline-shell/config.py.dist $PATH_ASSETS/powerline-shell/config.py
 
 	# chmod -v 755 ~/assets/powerline-shell/install.py
 	# ./install.py
-	( cd ~/assets/powerline-shell && ./install.py )
+	( cd $PATH_ASSETS/powerline-shell && ./install.py )
 
-	ln -s -v ~/assets/powerline-shell/powerline-shell.py ~/powerline-shell.py
+	ln -s -v $PATH_ASSETS/powerline-shell/powerline-shell.py ~/powerline-shell.py
 }
 
 function install_nano_highlighting()
 {
 	print_title "Installing additional hilighting for Nano"
 
-	if [ ! -d ~/2install/ ]; then
-		mkdir -v -p ~/2install/
+	if [ ! -d $PATH_2INSTALL ]; then
+		mkdir -v -p $PATH_2INSTALL
 	fi
 
-	if [ -d ~/2install/nanorc ]; then
-		echo -e "${BLUE}~/2install/nanorc already exists${NORMAL}"
-		rm -rfv ~/2install/nanorc
+	if [ -d $PATH_2INSTALL/nanorc ]; then
+		echo -e "${BLUE}$PATH_2INSTALL/nanorc already exists${NORMAL}"
+		rm -rfv $PATH_2INSTALL/nanorc
 	fi
 
-	git clone https://github.com/YSakhno/nanorc.git ~/2install/nanorc
+	git clone https://github.com/YSakhno/nanorc.git $PATH_2INSTALL/nanorc
 
 	echo -e "${BLUE}Download path $(pwd)${NORMAL}"
 
 	echo -e "${BLUE}Make${NORMAL}"
-	make -C  ~/2install/nanorc
+	make -C  $PATH_2INSTALL/nanorc
 
 	echo -e "${BLUE}Make install${NORMAL}"
-	make install -C ~/2install/nanorc
+	make install -C $PATH_2INSTALL/nanorc
 
-
-	echo -e "${BLUE}Appending 'include ~/.nano/syntax/ALL.nanorc' to '~/.nanorc'${NORMAL}"
-	echo -e include ~/.nano/syntax/ALL.nanorc >> ~/.nanorc
+	if  grep -q -F "include ~/.nano/syntax/ALL.nanorc" ~/.nanorc; then
+		echo -e "${BLUE}'include ~/.nano/syntax/ALL.nanorc' already included in '~/.nanorc'${NORMAL}"
+	else
+		echo -e "${BLUE}Appending 'include ~/.nano/syntax/ALL.nanorc' to '~/.nanorc'${NORMAL}"
+		echo -e include \~/.nano/syntax/ALL.nanorc >> ~/.nanorc
+	fi
 }
 
 function install_atool()
@@ -237,34 +260,35 @@ function install_atool()
 	print_title "Installing atool"
 
 	# http://www.nongnu.org/atool/
+	ATOOL="atool-0.39.0"
 
-	if [ ! -d ~/2install/ ]; then
-		mkdir -v -p ~/2install/
+	if [ ! -d $PATH_2INSTALL ]; then
+		mkdir -v -p $PATH_2INSTALL
 	fi
 
-	if [ -d ~/2install/atool-0.39.0.tar.gz ]; then
-		echo -e "${BLUE}~/2install/atool-0.39.0.tar.gz already exists${NORMAL}"
-		rm -v ~/2install/atool-0.39.0.tar.gz
+	if [ -d $PATH_2INSTALL/$ATOOL.tar.gz ]; then
+		echo -e "${BLUE}$PATH_2INSTALL/$ATOOL.tar.gz already exists${NORMAL}"
+		rm -v $PATH_2INSTALL/$ATOOL.tar.gz
 	fi
 
-	if [ -d ~/2install/atool-0.39.0 ]; then
-		echo -e "${BLUE}~/2install/atool-0.39.0 already exists${NORMAL}"
-		rm -rfv ~/2install/atool-0.39.0
+	if [ -d $PATH_2INSTALL/$ATOOL ]; then
+		echo -e "${BLUE}$PATH_2INSTALL/$ATOOL already exists${NORMAL}"
+		rm -rfv $PATH_2INSTALL/$ATOOL
 	fi
 
-	wget http://savannah.nongnu.org/download/atool/atool-0.39.0.tar.gz -O ~/2install/atool-0.39.0.tar.gz
-	mkdir -v ~/2install/atool-0.39.0
-	tar -zxvf ~/2install/atool-0.39.0.tar.gz -C ~/2install/atool-0.39.0 --strip-components=1
-	rm -v ~/2install/atool-0.39.0.tar.gz
+	wget http://savannah.nongnu.org/download/atool/$ATOOL.tar.gz -O $PATH_2INSTALL/$ATOOL.tar.gz
+	mkdir -v $PATH_2INSTALL/$ATOOL
+	tar -zxvf $PATH_2INSTALL/$ATOOL.tar.gz -C $PATH_2INSTALL/$ATOOL --strip-components=1
+	rm -v $PATH_2INSTALL/$ATOOL.tar.gz
 
 	echo -e "${BLUE}Configure${NORMAL}"
-	(cd ~/2install/atool-0.39.0 && ./configure)
+	(cd $PATH_2INSTALL/$ATOOL && ./configure)
 
 	echo -e "${BLUE}Make${NORMAL}"
-	make -C ~/2install/atool-0.39.0
+	make -C $PATH_2INSTALL/$ATOOL
 
 	echo -e "${BLUE}Make install${NORMAL}"
-	sudo make install -C ~/2install/atool-0.39.0
+	sudo make install -C $PATH_2INSTALL/$ATOOL
 }
 
 function set_zsh_default_shell()
@@ -311,6 +335,8 @@ function run_all()
 		remove_old_configs
 	fi
 
+	change_hostname
+
 	if $1; then
   		update_system
 	fi
@@ -340,6 +366,7 @@ function be_picky()
 	echo -e "6) Install additional Nano hilighting"
 	echo -e "7) Install atool"
 	echo -e "8) Set ZSH as default shell"
+	echo -e "9) Change hostname"
 	echo -e "\n*) Quit"
 
 	read -p ">> " choice
@@ -370,6 +397,9 @@ function be_picky()
 			be_picky;;
 		8 )
 			set_zsh_default_shell;;
+		9 )
+			change_hostname
+			be_picky;;
 	  	* )
 			exit;;
 	esac
