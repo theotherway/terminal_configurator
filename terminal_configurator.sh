@@ -10,7 +10,7 @@ PATH_2INSTALL=~/2install
 PATH_ASSETS=~/assets
 
 if [ "$1" == "debug" ]; then
-	$DEBUG = true
+	$DEBUG=true
 fi
 
 
@@ -27,7 +27,7 @@ function main_header_and_confirmation()
 	echo -e "${BOLD}Date: 2016-11-05${NORMAL}"
 	echo -e "${BOLD}-----------------------------------------------------------------${NORMAL}"
 
-	echo -e "\n${BLUE}Configuring sytem for user ${NORMAL}$(whoami) ${BLUE}with home folder ${NORMAL}$(pwd)"
+	echo -e "\n${BLUE}Configuring sytem for user ${NORMAL}$(whoami) ${BLUE}with home folder ${NORMAL}$HOME"
 
 	read -p "Continue (y/n)? " choice
 	case "$choice" in
@@ -94,7 +94,7 @@ function sudo_ping()
 
 function remove_old_configs()
 {
-	print_title "Removing old configurations (DEBUG ONLY - can result in unwanted deletion of files)"
+	print_title "Removing old configurations (DEBUG ONLY - may result in unwanted deletion of files)"
 
 	read -p "Do you want to remove configs (y/n)? " choice
 	case "$choice" in
@@ -129,6 +129,7 @@ function set_new_hostname()
 	case "$hostnameokay" in
 		y|Y )
 			sudo hostname $newhostname;;
+			#todo also ajust /etc/hosts
 		* )
 			set_new_hostname;;
 	esac
@@ -197,7 +198,7 @@ function configure_oh_my_zsh()
 		mv -v ~/.zshrc ~/.zshrc_backup
 	fi
 
-	wget https://raw.githubusercontent.com/theotherway/terminal_configurator/master/zshrc_config.txt -O .zshrc
+	wget https://raw.githubusercontent.com/theotherway/terminal_configurator/master/zshrc_config.txt -O ~/.zshrc
 }
 
 function install_powerline()
@@ -217,11 +218,7 @@ function install_powerline()
 
 	cp -v $PATH_ASSETS/powerline-shell/config.py.dist $PATH_ASSETS/powerline-shell/config.py
 
-	# chmod -v 755 ~/assets/powerline-shell/install.py
-	# ./install.py
-	( cd $PATH_ASSETS/powerline-shell && ./install.py )
-
-	ln -s -v $PATH_ASSETS/powerline-shell/powerline-shell.py ~/powerline-shell.py
+	( cd $PATH_ASSETS/powerline-shell && sudo python ./setup.py install )
 }
 
 function install_nano_highlighting()
